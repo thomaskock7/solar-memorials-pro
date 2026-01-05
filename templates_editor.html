@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if projeto %}Editar{% else %}Novo{% endif %} Projeto - Solar Memorials</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="main-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span>☀️ Solar</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="sidebar-nav-link">
+                        <span>📊 Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('novo_projeto') }}" class="sidebar-nav-link active">
+                        <span>➕ Novo Projeto</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('logout') }}" class="sidebar-nav-link">
+                        <span>🚪 Sair</span>
+                    </a>
+                </li>
+            </nav>
+        </aside>
+        
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <header class="header">
+                <h1 style="margin: 0; font-size: 1.5rem;">{% if projeto %}Editar Projeto{% else %}Novo Projeto{% endif %}</h1>
+                <button id="sidebar-toggle" style="display: none; background: none; border: none; color: var(--primary); font-size: 1.5rem; cursor: pointer;">☰</button>
+            </header>
+            
+            <!-- CONTEÚDO -->
+            <div class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                <span>{{ message }}</span>
+                                <span class="alert-close" onclick="this.parentElement.remove()">×</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% if projeto %}
+                    <script type="application/json" id="project-data">
+                        {{ projeto|tojson }}
+                    </script>
+                {% endif %}
+                
+                <div class="editor-container">
+                    <form id="editor-form" class="editor-form">
+                        <!-- DADOS DO CLIENTE -->
+                        <h2>Dados do Cliente</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nome_cliente">Nome do Cliente *</label>
+                                <input type="text" id="nome_cliente" name="nome_cliente" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cpf_cnpj">CPF/CNPJ</label>
+                                <input type="text" id="cpf_cnpj" name="cpf_cnpj" data-mask="cpf-cnpj">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="uc">Unidade Consumidora (UC)</label>
+                                <input type="text" id="uc" name="uc">
+                            </div>
+                            <div class="form-group">
+                                <label for="data_projeto">Data do Projeto</label>
+                                <input type="date" id="data_projeto" name="data_projeto">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="endereco">Endereço</label>
+                                <input type="text" id="endereco" name="endereco">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cidade">Cidade</label>
+                                <input type="text" id="cidade" name="cidade">
+                            </div>
+                            <div class="form-group">
+                                <label for="uf">UF</label>
+                                <input type="text" id="uf" name="uf" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="cep">CEP</label>
+                                <input type="text" id="cep" name="cep" data-mask="cep">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="concessionaria">Concessionária</label>
+                                <select id="concessionaria" name="concessionaria">
+                                    <option value="">Selecione...</option>
+                                    <option value="EDP">EDP</option>
+                                    <option value="CEMIG">CEMIG</option>
+                                    <option value="Enel">Enel</option>
+                                    <option value="Copel">Copel</option>
+                                    <option value="AES">AES</option>
+                                    <option value="Outra">Outra</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                        
+                        <!-- TIPO DE PROJETO -->
+                        <h2>Tipo de Projeto</h2>
+                        
+                        <div class="form-group">
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="tipo_projeto" value="Instalação Nova" checked>
+                                    Instalação Nova
+                                </label>
+                                <label>
+                                    <input type="radio" name="tipo_projeto" value="Ampliação">
+                                    Ampliação
+                                </label>
+                                <label>
+                                    <input type="radio" name="tipo_projeto" value="Grid Zero">
+                                    Grid Zero
+                                </label>
+                                <label>
+                                    <input type="radio" name="tipo_projeto" value="Art. 73-A">
+                                    Art. 73-A
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- SEÇÃO AMPLIAÇÃO -->
+                        <div data-section="ampliacao" style="display: none;">
+                            <h3>Equipamentos Existentes</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="modulos_existentes">Módulos Existentes</label>
+                                    <input type="number" id="modulos_existentes" name="modulos_existentes" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inversores_existentes">Inversores Existentes</label>
+                                    <input type="text" id="inversores_existentes" name="inversores_existentes">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEÇÃO GRID ZERO -->
+                        <div data-section="grid-zero" style="display: none;">
+                            <h3>Equipamentos Grid Zero</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="controlador">Controlador</label>
+                                    <input type="text" id="controlador" name="controlador">
+                                </div>
+                                <div class="form-group">
+                                    <label for="transdutor_tc">Transdutor TC</label>
+                                    <input type="text" id="transdutor_tc" name="transdutor_tc">
+                                </div>
+                                <div class="form-group">
+                                    <label for="chave_seccionadora">Chave Seccionadora</label>
+                                    <input type="text" id="chave_seccionadora" name="chave_seccionadora">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEÇÃO ART. 73-A -->
+                        <div data-section="art73a" style="display: none;">
+                            <h3>Dados Art. 73-A</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="media_consumo">Média de Consumo (kWh)</label>
+                                    <input type="number" id="media_consumo" name="media_consumo" step="0.01" data-mask="decimal">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fator_carga">Fator de Carga</label>
+                                    <input type="number" id="fator_carga" name="fator_carga" step="0.01" data-mask="decimal">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fator_ajuste">Fator de Ajuste</label>
+                                    <input type="number" id="fator_ajuste" name="fator_ajuste" step="0.01" data-mask="decimal">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                        
+                        <!-- NOVO SISTEMA -->
+                        <h2>Novo Sistema</h2>
+                        
+                        <h3>Módulos Fotovoltaicos</h3>
+                        <div id="modulos-list" class="dynamic-list"></div>
+                        <button type="button" id="btn-add-modulo" class="btn-add">+ Adicionar Módulo</button>
+                        
+                        <h3 style="margin-top: 2rem;">Inversores</h3>
+                        <div id="inversores-list" class="dynamic-list"></div>
+                        <button type="button" id="btn-add-inversor" class="btn-add">+ Adicionar Inversor</button>
+                        
+                        <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+                        
+                        <!-- TOTAIS -->
+                        <h2>Totais do Projeto</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="potencia_kwp">Potência Total (kWp)</label>
+                                <input type="number" id="potencia_kwp" name="potencia_kwp" step="0.01" data-calculate="true" data-mask="decimal">
+                            </div>
+                            <div class="form-group">
+                                <label for="geracao_kwh_mes">Geração Estimada (kWh/mês)</label>
+                                <input type="number" id="geracao_kwh_mes" name="geracao_kwh_mes" step="0.01" data-calculate="true" data-mask="decimal">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reducao_percentual">Redução de Consumo (%)</label>
+                                <input type="number" id="reducao_percentual" name="reducao_percentual" step="0.01" min="0" max="100" data-mask="decimal">
+                            </div>
+                            <div class="form-group">
+                                <label for="area_arranjos">Área de Arranjos (m²)</label>
+                                <input type="number" id="area_arranjos" name="area_arranjos" step="0.01" data-mask="decimal">
+                            </div>
+                            <div class="form-group">
+                                <label for="quantidade_modulos">Quantidade de Módulos</label>
+                                <input type="number" id="quantidade_modulos" name="quantidade_modulos" min="0">
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- SIDEBAR DO EDITOR -->
+                    <div class="editor-sidebar">
+                        <h3 style="margin-top: 0;">Ações</h3>
+                        
+                        <button type="button" id="btn-demo" class="btn btn-secondary btn-block" style="margin-bottom: 1rem;">
+                            📋 Preencher Demo
+                        </button>
+                        
+                        <button type="button" id="btn-salvar" class="btn btn-primary btn-block" style="margin-bottom: 1rem;">
+                            💾 Salvar Projeto
+                        </button>
+                        
+                        {% if projeto %}
+                            <button type="button" id="btn-gerar-docx" class="btn btn-success btn-block" style="margin-bottom: 1rem;">
+                                📄 Gerar DOCX
+                            </button>
+                        {% endif %}
+                        
+                        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+                        
+                        <h4 style="margin-bottom: 1rem;">Informações</h4>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <p><strong>Dica:</strong> Preencha todos os campos obrigatórios antes de salvar.</p>
+                            <p><strong>Módulos:</strong> Use o botão "+" para adicionar múltiplos módulos.</p>
+                            <p><strong>DOCX:</strong> Gere o memorial após salvar o projeto.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Mostrar botão de toggle em mobile
+        if (window.innerWidth < 768) {
+            document.getElementById('sidebar-toggle').style.display = 'block';
+        }
+        
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                document.getElementById('sidebar-toggle').style.display = 'none';
+                document.querySelector('.sidebar').classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
